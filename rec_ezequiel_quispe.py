@@ -49,13 +49,39 @@ def cargar_datos(campos):
 
 def calculo_viaticos(viaticos, empleados):
     total_gastos = 0
-    monto_maximo = 5000
+    MONTO_MAXIMO = 5000
     while True:
-        opcion = input("Seleccione una opción:\n"
-                       "1- Cargar informacion desde un archivo existente.\n"
+        opcion = input("Seleccione una opción:\n1- Cargar informacion desde un archivo existente.\n"
                        "2- Guardar información y crear un archivo nuevo.\n")
         if opcion == "1":
             nombre_archivo = input("Ingrese el nombre del archivo:\n")
+            nombre_archivo_csv = nombre_archivo + ".csv"
+            try:
+                with open(nombre_archivo_csv, 'r', newline='') as a_legajos, open(viaticos, 'r', newline='') as a_viaticos:
+                    numero_legajo = input("Ingresa un número de legajo:\n")
+                    legajos_csv = csv.reader(a_legajos)
+                    viaticos_csv = csv.reader(a_viaticos)
+                    next(legajos_csv)
+                    next(viaticos_csv)
+                    legajos = next(legajos_csv, None)
+                    gastos_viaticos = next(viaticos_csv, None)
+                    while legajos:
+                        while gastos_viaticos:
+                            if int(gastos_viaticos[0]) == numero_legajo:
+                                total_gastos += int(gastos_viaticos[1])
+                            gastos_viaticos = next(viaticos_csv, None)
+                        if int(legajos[0]) == numero_legajo:
+                            if total_gastos > MONTO_MAXIMO:
+                                deuda = total_gastos - MONTO_MAXIMO
+                                print(f"Legajo {legajos[0]}: {legajos[2]} {legajos[1]} debe {deuda}")
+                            else:
+                                print(
+                                    f"Legajo {legajos[0]}: {legajos[2]} {legajos[1]} gastó {total_gastos} en viaticos")
+                            menu_usuario()
+                        legajos = next(legajos_csv, None)
+                    print(f"El legajo {numero_legajo} es inválido, volve a intentarlo.")
+            except IOError:
+                print("Error al abrir el archivo, volvé a intentarlo.")
         if opcion == "2":
             cargar_datos(empleados)
 
